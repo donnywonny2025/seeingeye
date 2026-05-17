@@ -1,0 +1,236 @@
+/* ═══════════════════════════════════════════════════
+   THE SEEING EYE — HUD Styles
+   Dark, glanceable, minimal. Designed for 1-second reads.
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background: transparent;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, sans-serif;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+/* ── HUD Container ────────────────────────────── */
+
+.hud {
+  width: 100%;
+  height: 100vh;
+  background: rgba(10, 10, 14, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Status Bar ───────────────────────────────── */
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  -webkit-app-region: drag;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.indicator.off {
+  background: #555;
+  box-shadow: none;
+}
+
+.indicator.listening {
+  background: #00ff88;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.indicator.processing {
+  background: #ffa500;
+  box-shadow: 0 0 8px rgba(255, 165, 0, 0.5);
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+#status-text {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.latency {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Sections ─────────────────────────────────── */
+
+.section {
+  padding: 10px 14px;
+  -webkit-app-region: no-drag;
+}
+
+.section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── Transcript Section ───────────────────────── */
+
+.transcript-section {
+  flex: 0 0 auto;
+  max-height: 140px;
+  overflow-y: auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.transcript {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.transcript-final {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.transcript-partial {
+  color: rgba(0, 255, 136, 0.8);
+  font-style: italic;
+}
+
+/* ── Answer Section ───────────────────────────── */
+
+.answer-section {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.answer {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+}
+
+.answer .placeholder {
+  color: rgba(255, 255, 255, 0.2);
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Markdown-like styling for streamed answers */
+.answer strong, .answer b {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Make bullet points stand out */
+.answer-bullet {
+  display: block;
+  padding: 4px 0;
+  padding-left: 12px;
+  position: relative;
+}
+
+.answer-bullet::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #00ff88;
+}
+
+/* ── Question Highlight ───────────────────────── */
+
+.question-highlight {
+  background: rgba(0, 255, 136, 0.08);
+  border-left: 2px solid rgba(0, 255, 136, 0.4);
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Drag Handle ──────────────────────────────── */
+
+.drag-handle {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.15);
+  cursor: grab;
+  -webkit-app-region: drag;
+}
+
+/* ── Scrollbar ────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Streaming Answer Animation ───────────────── */
+
+@keyframes typeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.token-new {
+  animation: typeIn 0.1s ease-out;
+}

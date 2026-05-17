@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Seeing Eye</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- THE SEEING EYE — HUD Overlay               -->
+  <!-- This entire window is invisible to screen   -->
+  <!-- capture. Only you can see it.               -->
+  <!-- ═══════════════════════════════════════════ -->
+
+  <div id="hud" class="hud">
+    <!-- Status Bar -->
+    <div id="status-bar" class="status-bar">
+      <div class="status-left">
+        <span id="status-indicator" class="indicator off"></span>
+        <span id="status-text">STANDBY</span>
+      </div>
+      <div class="status-right">
+        <span id="latency-display" class="latency">—</span>
+      </div>
+    </div>
+
+    <!-- Live Transcript -->
+    <div id="transcript-section" class="section transcript-section">
+      <div class="section-label">LISTENING</div>
+      <div id="transcript" class="transcript">
+        <span id="transcript-final" class="transcript-final"></span>
+        <span id="transcript-partial" class="transcript-partial"></span>
+      </div>
+    </div>
+
+    <!-- Answer Card -->
+    <div id="answer-section" class="section answer-section">
+      <div class="section-label">ANSWER</div>
+      <div id="answer" class="answer">
+        <span class="placeholder">Waiting for question...</span>
+      </div>
+    </div>
+
+    <!-- Drag Handle -->
+    <div class="drag-handle" id="drag-handle">⠿</div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

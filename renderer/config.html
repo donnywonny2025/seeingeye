@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Seeing Eye — Config</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e5;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    .card {
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #555;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field:last-child { margin-bottom: 0; }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0a0a0f;
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      color: #e0e0e5;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, input:focus {
+      border-color: #4a9eff;
+    }
+
+    select option {
+      background: #12121a;
+      color: #e0e0e5;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #1a1a2a;
+    }
+
+    .status-row:last-child { border-bottom: none; }
+
+    .status-label {
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .status-value {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-ok { color: #4ade80; }
+    .status-err { color: #f87171; }
+    .status-warn { color: #fbbf24; }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .dot-ok { background: #4ade80; }
+    .dot-err { background: #f87171; }
+    .dot-warn { background: #fbbf24; }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #4a9eff;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #3a8eef; }
+
+    .btn-secondary {
+      background: #1e1e2e;
+      color: #aaa;
+    }
+
+    .btn-secondary:hover { background: #2a2a3e; color: #e0e0e5; }
+
+    .btn-danger {
+      background: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .btn-danger:hover { background: #991b1b; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .meter-bar {
+      width: 100%;
+      height: 6px;
+      background: #1a1a2a;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .meter-fill {
+      height: 100%;
+      background: #4ade80;
+      border-radius: 3px;
+      transition: width 0.05s;
+      width: 0%;
+    }
+
+    .hotkey-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 16px;
+    }
+
+    .hotkey-key {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      background: #1a1a2a;
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: #4a9eff;
+      white-space: nowrap;
+    }
+
+    .hotkey-desc {
+      font-size: 13px;
+      color: #888;
+      display: flex;
+      align-items: center;
+    }
+
+    .log-box {
+      background: #08080e;
+      border: 1px solid #1a1a2a;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: #666;
+      max-height: 150px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    .log-entry { margin-bottom: 2px; }
+    .log-ok { color: #4ade80; }
+    .log-err { color: #f87171; }
+    .log-info { color: #4a9eff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>👁 The Seeing Eye</h1>
+      <p>Audio configuration & system check</p>
+    </div>
+
+    <!-- System Status -->
+    <div class="card">
+      <div class="card-title">System Status</div>
+      <div class="status-row">
+        <span class="status-label">Server</span>
+        <span class="status-value" id="status-server">checking...</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Deepgram STT</span>
+        <span class="status-value" id="status-deepgram">checking...</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Groq LLM</span>
+        <span class="status-value" id="status-groq">checking...</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">BlackHole Audio</span>
+        <span class="status-value" id="status-blackhole">checking...</span>
+      </div>
+    </div>
+
+    <!-- Audio Device Selection -->
+    <div class="card">
+      <div class="card-title">Audio Input</div>
+      <div class="field">
+        <label>Capture Device (should be BlackHole 2ch)</label>
+        <select id="audio-device"></select>
+      </div>
+      <div class="field">
+        <label>Audio Level</label>
+        <div class="meter-bar">
+          <div class="meter-fill" id="audio-meter"></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-test-audio">Test Audio Capture</button>
+        <button class="btn btn-secondary" id="btn-stop-audio">Stop</button>
+      </div>
+    </div>
+
+    <!-- Quick Test -->
+    <div class="card">
+      <div class="card-title">Quick Test</div>
+      <p style="font-size: 13px; color: #888; margin-bottom: 12px;">
+        Play audio through your sound bar and click "Test". You should see transcript appear below.
+      </p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-test-pipeline">Test Full Pipeline</button>
+        <button class="btn btn-danger" id="btn-stop-pipeline">Stop</button>
+      </div>
+      <div class="log-box" id="test-log" style="margin-top: 12px;">
+        <div class="log-entry" style="color: #444;">Ready to test...</div>
+      </div>
+    </div>
+
+    <!-- Hotkeys Reference -->
+    <div class="card">
+      <div class="card-title">Hotkeys</div>
+      <div class="hotkey-grid">
+        <span class="hotkey-key">⌘⇧H</span>
+        <span class="hotkey-desc">Show / hide HUD overlay</span>
+        <span class="hotkey-key">⌘⇧L</span>
+        <span class="hotkey-desc">Start / stop listening</span>
+        <span class="hotkey-key">⌘⇧C</span>
+        <span class="hotkey-desc">Clear transcript & answers</span>
+        <span class="hotkey-key">⌘⇧T</span>
+        <span class="hotkey-desc">Toggle click-through mode</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script>
+    // ── State ──
+    let testStream = null;
+    let testContext = null;
+    let testProcessor = null;
+    let socket = null;
+    let isTestingPipeline = false;
+
+    // ── DOM ──
+    const audioDeviceSelect = document.getElementById('audio-device');
+    const audioMeter = document.getElementById('audio-meter');
+    const testLog = document.getElementById('test-log');
+
+    // ── Init ──
+    async function init() {
+      await checkServerHealth();
+      await populateAudioDevices();
+      setupSocketForTest();
+    }
+
+    // ── Server Health Check ──
+    async function checkServerHealth() {
+      try {
+        const res = await fetch('/health');
+        const data = await res.json();
+
+        setStatus('status-server', true, 'Connected');
+        setStatus('status-deepgram', data.deepgram, data.deepgram ? 'API Key Set' : 'Missing API Key');
+        setStatus('status-groq', data.groq, data.groq ? 'API Key Set' : 'Missing API Key');
+      } catch (e) {
+        setStatus('status-server', false, 'Not Running');
+        setStatus('status-deepgram', false, 'Unknown');
+        setStatus('status-groq', false, 'Unknown');
+      }
+    }
+
+    function setStatus(id, ok, text) {
+      const el = document.getElementById(id);
+      const dotClass = ok ? 'dot-ok' : 'dot-err';
+      const textClass = ok ? 'status-ok' : 'status-err';
+      el.innerHTML = `<span class="dot ${dotClass}"></span><span class="${textClass}">${text}</span>`;
+    }
+
+    // ── Audio Device Enumeration ──
+    async function populateAudioDevices() {
+      try {
+        // Need to request permission first to get device labels
+        const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        tempStream.getTracks().forEach(t => t.stop());
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const inputs = devices.filter(d => d.kind === 'audioinput');
+
+        audioDeviceSelect.innerHTML = '';
+        let blackholeFound = false;
+
+        inputs.forEach(device => {
+          const opt = document.createElement('option');
+          opt.value = device.deviceId;
+          opt.textContent = device.label || `Microphone ${device.deviceId.slice(0, 8)}`;
+
+          if (device.label.toLowerCase().includes('blackhole')) {
+            opt.textContent += ' ⭐ (Recommended)';
+            opt.selected = true;
+            blackholeFound = true;
+          }
+
+          audioDeviceSelect.appendChild(opt);
+        });
+
+        setStatus('status-blackhole', blackholeFound,
+          blackholeFound ? 'Found & Selected' : 'Not Found — using default mic');
+
+      } catch (e) {
+        audioDeviceSelect.innerHTML = '<option>Microphone access denied</option>';
+        setStatus('status-blackhole', false, 'Permission Denied');
+      }
+    }
+
+    // ── Audio Level Meter ──
+    document.getElementById('btn-test-audio').addEventListener('click', async () => {
+      await stopTestAudio();
+
+      const deviceId = audioDeviceSelect.value;
+      try {
+        testStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: { exact: deviceId },
+            channelCount: 1,
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+          }
+        });
+
+        testContext = new AudioContext();
+        const source = testContext.createMediaStreamSource(testStream);
+        const analyser = testContext.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        function updateMeter() {
+          if (!testContext) return;
+          analyser.getByteFrequencyData(dataArray);
+          const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+          const level = Math.min(100, (avg / 128) * 100);
+          audioMeter.style.width = level + '%';
+          audioMeter.style.background = level > 5 ? '#4ade80' : '#333';
+          requestAnimationFrame(updateMeter);
+        }
+        updateMeter();
+
+        log('Audio capture active — play audio through your sound bar', 'ok');
+      } catch (e) {
+        log('Failed to capture audio: ' + e.message, 'err');
+      }
+    });
+
+    document.getElementById('btn-stop-audio').addEventListener('click', stopTestAudio);
+
+    async function stopTestAudio() {
+      if (testStream) {
+        testStream.getTracks().forEach(t => t.stop());
+        testStream = null;
+      }
+      if (testContext) {
+        await testContext.close();
+        testContext = null;
+      }
+      audioMeter.style.width = '0%';
+    }
+
+    // ── Full Pipeline Test ──
+    function setupSocketForTest() {
+      socket = io(`http://localhost:${location.port || 4400}`);
+
+      socket.on('connect', () => log('Socket connected', 'info'));
+      socket.on('transcript-partial', ({ text }) => log(`📝 Partial: ${text}`, 'info'));
+      socket.on('transcript-final', ({ text }) => log(`✅ Final: ${text}`, 'ok'));
+      socket.on('question-detected', ({ question }) => log(`❓ Question: ${question}`, 'ok'));
+      socket.on('answer-token', ({ token }) => {
+        // Append to last log line if it's an answer
+        const lastEntry = testLog.lastElementChild;
+        if (lastEntry && lastEntry.dataset.type === 'answer') {
+          lastEntry.textContent += token;
+        } else {
+          const div = document.createElement('div');
+          div.className = 'log-entry log-ok';
+          div.dataset.type = 'answer';
+          div.textContent = '💡 ' + token;
+          testLog.appendChild(div);
+        }
+        testLog.scrollTop = testLog.scrollHeight;
+      });
+      socket.on('answer-complete', () => log('Answer complete', 'info'));
+      socket.on('listening-started', () => log('Deepgram listening started', 'ok'));
+      socket.on('listening-stopped', () => log('Listening stopped', 'info'));
+      socket.on('error', ({ message }) => log('Error: ' + message, 'err'));
+    }
+
+    document.getElementById('btn-test-pipeline').addEventListener('click', async () => {
+      if (isTestingPipeline) return;
+      isTestingPipeline = true;
+
+      testLog.innerHTML = '';
+      log('Starting full pipeline test...', 'info');
+
+      const deviceId = audioDeviceSelect.value;
+
+      try {
+        testStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: { exact: deviceId },
+            channelCount: 1,
+            sampleRate: 16000,
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+          }
+        });
+
+        testContext = new AudioContext({ sampleRate: 16000 });
+        const source = testContext.createMediaStreamSource(testStream);
+        testProcessor = testContext.createScriptProcessor(4096, 1, 1);
+
+        testProcessor.onaudioprocess = (event) => {
+          if (!isTestingPipeline) return;
+          const inputData = event.inputBuffer.getChannelData(0);
+          const pcmBuffer = new Int16Array(inputData.length);
+          for (let i = 0; i < inputData.length; i++) {
+            const s = Math.max(-1, Math.min(1, inputData[i]));
+            pcmBuffer[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          }
+          socket.emit('audio-data', pcmBuffer.buffer);
+        };
+
+        source.connect(testProcessor);
+        testProcessor.connect(testContext.destination);
+
+        socket.emit('start-listening');
+        log('Capturing from: ' + (audioDeviceSelect.selectedOptions[0]?.text || 'default'), 'info');
+        log('Play audio through your sound bar now...', 'ok');
+      } catch (e) {
+        log('Pipeline test failed: ' + e.message, 'err');
+        isTestingPipeline = false;
+      }
+    });
+
+    document.getElementById('btn-stop-pipeline').addEventListener('click', async () => {
+      isTestingPipeline = false;
+      socket.emit('stop-listening');
+      await stopTestAudio();
+      if (testProcessor) {
+        testProcessor.disconnect();
+        testProcessor = null;
+      }
+      log('Pipeline test stopped', 'info');
+    });
+
+    // ── Log Helper ──
+    function log(msg, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `log-entry log-${type}`;
+      div.textContent = msg;
+      testLog.appendChild(div);
+      testLog.scrollTop = testLog.scrollHeight;
+    }
+
+    // ── Boot ──
+    init();
+  </script>
+</body>
+</html>

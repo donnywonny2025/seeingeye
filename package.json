@@ -1,0 +1,27 @@
+{
+  "name": "the-seeing-eye",
+  "version": "1.0.0",
+  "description": "Real-time interview HUD — invisible overlay with live transcription and AI-powered answers",
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "node scripts/start.js",
+    "dev:server": "node server/index.js",
+    "dev:electron": "electron .",
+    "start": "NODE_ENV=production electron .",
+    "setup": "node scripts/setup.js"
+  },
+  "keywords": ["interview", "hud", "transcription", "deepgram", "groq", "electron"],
+  "license": "MIT",
+  "dependencies": {
+    "@deepgram/sdk": "^3.9.0",
+    "dotenv": "^16.4.7",
+    "electron-store": "^8.2.0",
+    "express": "^4.21.2",
+    "groq-sdk": "^0.15.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "electron": "^33.3.1"
+  }
+}
