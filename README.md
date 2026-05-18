@@ -89,3 +89,23 @@ THE SEEING EYE/
 └── docs/               # Documentation
     └── audio-setup.md  # BlackHole config guide
 ```
+
+## Prompt Engineering & Streaming Issues (Developer Notes)
+
+During development, significant issues were encountered when trying to force the LLMs (specifically Gemini 2.5 Flash) to format their answers for a live teleprompter HUD.
+
+### The Core Conflict
+The user requires high-quality, detailed, flowing answers. Because the answers are read live on camera, the text must stream into the UI as **one continuous paragraph** without sudden line breaks (`\n`) that cause the DOM to shift and break the user's eye contact/focus.
+
+### The Failures
+1. **The "Brevity Limit" Failure:** We attempted to stop formatting bugs by limiting the output to "1-2 sentences" or "Max 50 words". While this successfully prevented the AI from generating lists, it completely ruined the quality of the answers, resulting in vague platitudes.
+2. **The "Negative Constraint" Failure:** We attempted to use negative constraints in the `SYSTEM_PROMPT` (e.g., "NEVER use bolding", "NEVER use bullet points"). Because LLMs are probabilistic, when asked a structural question (e.g., "What are the 5 components of X?"), the model's base training overrides the negative constraint. It feels compelled to write a 5-point list with bold headers, completely ignoring the "no markdown" rule.
+
+### The Ultimate Fix (Code-Level Sanitization)
+We abandoned trying to use prompt engineering to control the strict mechanical formatting of the text. 
+1. **Prompt Restoration:** The `SYSTEM_PROMPT` in `server/llm.js` was restored to encourage full, detailed, conversational answers.
+2. **Stream Sanitization:** The true fix was implemented in the code layer. As tokens stream back from Gemini/Groq in `server/llm.js`, they are intercepted and hard-sanitized using a regex:
+   ```javascript
+   token = token.replace(/[\n*#_-]/g, ' ');
+   ```
+This allows the LLM to "think" in whatever complex lists or bolding it wants in its brain, ensuring high-quality answers. However, by the time the stream hits the Electron renderer, it is a single, unbroken block of plain text. The CSS (`white-space: pre-wrap; word-break: break-word;`) naturally wraps the text horizontally, keeping the HUD completely stable for the user.
