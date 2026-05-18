@@ -11,10 +11,18 @@
     "start": "NODE_ENV=production electron .",
     "setup": "node scripts/setup.js"
   },
-  "keywords": ["interview", "hud", "transcription", "deepgram", "groq", "electron"],
+  "keywords": [
+    "interview",
+    "hud",
+    "transcription",
+    "deepgram",
+    "groq",
+    "electron"
+  ],
   "license": "MIT",
   "dependencies": {
     "@deepgram/sdk": "^3.9.0",
+    "@google/genai": "^2.3.0",
     "dotenv": "^16.4.7",
     "electron-store": "^8.2.0",
     "express": "^4.21.2",

@@ -119,8 +119,8 @@ html, body {
 /* ── Transcript Section ───────────────────────── */
 
 .transcript-section {
-  flex: 0 0 auto;
-  max-height: 140px;
+  flex: 0 0 140px;
+  height: 140px;
   overflow-y: auto;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -148,10 +148,12 @@ html, body {
 }
 
 .answer {
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 400;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .answer .placeholder {

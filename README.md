@@ -14,7 +14,7 @@ Real-time interview HUD with invisible overlay, live transcription, and AI-power
 ┌─────────────────────────────────────────────────┐
 │  Server (Node.js + Socket.IO)                    │
 │  ├── Transcriber  → Deepgram Nova-2 streaming    │
-│  ├── LLM Engine   → Groq (Llama 3.3 70B)        │
+│  ├── LLM Engine   → Gemini 3 Flash / Groq      │
 │  └── VAD          → Silence detection            │
 └──────────────────┬──────────────────────────────┘
                    │ WebSocket (streaming tokens)
@@ -60,9 +60,9 @@ npm run dev
 
 | Service | Free Tier | Sign Up |
 |---|---|---|
+| Gemini | Primary | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
 | Deepgram | $200 credit | [console.deepgram.com](https://console.deepgram.com) |
-| Groq | Free tier | [console.groq.com](https://console.groq.com) |
-| Gemini | Free tier (fallback) | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
+| Groq | Free tier (fallback) | [console.groq.com](https://console.groq.com) |
 
 ## Project Structure
 

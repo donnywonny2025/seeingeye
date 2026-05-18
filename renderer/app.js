@@ -15,6 +15,9 @@ let isListening = false;
 let audioContext = null;
 let mediaStream = null;
 let processorNode = null;
+let userMicStream = null;
+let userMicContext = null;
+let userMicProcessor = null;
 
 // ── DOM References ─────────────────────────────
 
@@ -57,10 +60,10 @@ function setupSocketHandlers() {
     autoScrollTranscript();
   });
 
-  // Question detected — show it highlighted
+  // Question detected — clear the answer box and show THINKING
   socket.on('question-detected', ({ question }) => {
     setStatus('processing', 'THINKING');
-    answerDiv.innerHTML = `<div class="question-highlight">Q: ${escapeHtml(question)}</div>`;
+    answerDiv.innerHTML = ''; // Clear previous answer, but don't show the question here
   });
 
   // Answer tokens streaming in
@@ -69,14 +72,18 @@ function setupSocketHandlers() {
     const placeholder = answerDiv.querySelector('.placeholder');
     if (placeholder) placeholder.remove();
 
-    // Append token
-    const span = document.createElement('span');
-    span.className = 'token-new';
-    span.textContent = token;
-    answerDiv.appendChild(span);
+    // Append token to the last text node to prevent kerning layout jitter
+    const lastNode = answerDiv.lastChild;
+    if (lastNode && lastNode.nodeType === Node.TEXT_NODE) {
+      lastNode.nodeValue += token;
+    } else {
+      answerDiv.appendChild(document.createTextNode(token));
+    }
 
-    // Auto-scroll answer
-    answerDiv.scrollTop = answerDiv.scrollHeight;
+    // Auto-scroll answer only if it's overflowing (prevents unnecessary layout thrashing)
+    if (answerDiv.scrollHeight > answerDiv.clientHeight) {
+      answerDiv.scrollTop = answerDiv.scrollHeight;
+    }
   });
 
   // Answer complete
@@ -87,9 +94,8 @@ function setupSocketHandlers() {
     if (isListening) {
       setStatus('listening', 'LISTENING');
     }
-    // Clear transcript for next question
-    transcriptFinal.textContent = '';
-    transcriptPartial.textContent = '';
+    // We intentionally DO NOT clear the transcript here anymore. 
+    // The question stays on screen so you can read it, and the strict CSS height prevents the UI from bouncing.
   });
 
   socket.on('listening-started', () => {
@@ -110,12 +116,12 @@ function setupSocketHandlers() {
 
 async function startAudioCapture() {
   try {
-    // Find BlackHole 2ch device — this captures system audio
     const devices = await navigator.mediaDevices.enumerateDevices();
     const audioInputs = devices.filter(d => d.kind === 'audioinput');
     const blackhole = audioInputs.find(d => d.label.toLowerCase().includes('blackhole'));
 
-    const audioConstraints = {
+    // ── Stream 1: BlackHole (interviewer audio) ──
+    const interviewerConstraints = {
       channelCount: 1,
       sampleRate: 16000,
       echoCancellation: false,
@@ -123,42 +129,72 @@ async function startAudioCapture() {
       autoGainControl: false,
     };
 
-    // If BlackHole found, use it explicitly
     if (blackhole) {
-      audioConstraints.deviceId = { exact: blackhole.deviceId };
-      console.log('[HUD] Using BlackHole 2ch for audio capture');
+      interviewerConstraints.deviceId = { exact: blackhole.deviceId };
+      console.log('[HUD] Interviewer stream: BlackHole 2ch');
     } else {
-      console.warn('[HUD] BlackHole not found — using default mic. System audio capture may not work.');
+      console.warn('[HUD] BlackHole not found — using default mic for interviewer stream');
     }
 
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
-
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: interviewerConstraints });
     audioContext = new AudioContext({ sampleRate: 16000 });
     const source = audioContext.createMediaStreamSource(mediaStream);
 
-    // Use ScriptProcessor for raw PCM access
-    // (AudioWorklet would be cleaner but this is simpler for v1)
     processorNode = audioContext.createScriptProcessor(4096, 1, 1);
     processorNode.onaudioprocess = (event) => {
       if (!isListening) return;
-
       const inputData = event.inputBuffer.getChannelData(0);
-
-      // Convert Float32 to Int16 PCM (what Deepgram expects)
       const pcmBuffer = new Int16Array(inputData.length);
       for (let i = 0; i < inputData.length; i++) {
         const s = Math.max(-1, Math.min(1, inputData[i]));
         pcmBuffer[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
       }
-
-      // Send raw audio to server
       socket.emit('audio-data', pcmBuffer.buffer);
     };
 
     source.connect(processorNode);
     processorNode.connect(audioContext.destination);
+    console.log('[HUD] Interviewer audio capture started');
 
-    console.log('[HUD] Audio capture started');
+    // ── Stream 2: Real mic (user's voice for logging) ──
+    const realMic = audioInputs.find(d =>
+      !d.label.toLowerCase().includes('blackhole') &&
+      d.deviceId !== 'default' &&
+      d.label !== ''
+    );
+
+    if (realMic) {
+      const userMicConstraints = {
+        deviceId: { exact: realMic.deviceId },
+        channelCount: 1,
+        sampleRate: 16000,
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      };
+
+      userMicStream = await navigator.mediaDevices.getUserMedia({ audio: userMicConstraints });
+      userMicContext = new AudioContext({ sampleRate: 16000 });
+      const userSource = userMicContext.createMediaStreamSource(userMicStream);
+
+      userMicProcessor = userMicContext.createScriptProcessor(4096, 1, 1);
+      userMicProcessor.onaudioprocess = (event) => {
+        if (!isListening) return;
+        const inputData = event.inputBuffer.getChannelData(0);
+        const pcmBuffer = new Int16Array(inputData.length);
+        for (let i = 0; i < inputData.length; i++) {
+          const s = Math.max(-1, Math.min(1, inputData[i]));
+          pcmBuffer[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        }
+        socket.emit('user-audio-data', pcmBuffer.buffer);
+      };
+
+      userSource.connect(userMicProcessor);
+      userMicProcessor.connect(userMicContext.destination);
+      console.log(`[HUD] User mic stream: ${realMic.label}`);
+    } else {
+      console.warn('[HUD] No real mic found — user voice will not be logged');
+    }
   } catch (err) {
     console.error('[HUD] Audio capture failed:', err.message);
     setStatus('off', 'MIC ERROR');
@@ -178,7 +214,20 @@ function stopAudioCapture() {
     audioContext.close();
     audioContext = null;
   }
-  console.log('[HUD] Audio capture stopped');
+  // Clean up user mic stream
+  if (userMicProcessor) {
+    userMicProcessor.disconnect();
+    userMicProcessor = null;
+  }
+  if (userMicStream) {
+    userMicStream.getTracks().forEach(track => track.stop());
+    userMicStream = null;
+  }
+  if (userMicContext) {
+    userMicContext.close();
+    userMicContext = null;
+  }
+  console.log('[HUD] All audio capture stopped');
 }
 
 // ── Toggle Listening ───────────────────────────

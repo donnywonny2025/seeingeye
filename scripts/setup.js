@@ -52,7 +52,8 @@ try {
   config({ path: envPath });
   
   console.log(`${process.env.DEEPGRAM_API_KEY ? '✓' : '✗'} Deepgram API key ${process.env.DEEPGRAM_API_KEY ? 'configured' : 'MISSING — get one at console.deepgram.com'}`);
-  console.log(`${process.env.GROQ_API_KEY ? '✓' : '✗'} Groq API key ${process.env.GROQ_API_KEY ? 'configured' : 'MISSING — get one at console.groq.com'}`);
+  console.log(`${process.env.GROQ_API_KEY ? '✓' : '✗'} Groq API key ${process.env.GROQ_API_KEY ? 'configured' : 'MISSING (fallback) — get one at console.groq.com'}`);
+  console.log(`${process.env.GEMINI_API_KEY ? '✓' : '✗'} Gemini API key ${process.env.GEMINI_API_KEY ? 'configured' : 'MISSING (primary) — get one at aistudio.google.com'}`);
 } catch {
   console.log('? Could not check API keys');
 }

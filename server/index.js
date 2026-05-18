@@ -17,8 +17,10 @@ import { fileURLToPath } from 'url';
 import { Transcriber } from './transcriber.js';
 import { LLMEngine } from './llm.js';
 import { VADManager } from './vad.js';
+import { appendFileSync } from 'fs';
 
 const __serverDir = dirname(fileURLToPath(import.meta.url));
+const LOG_DIR = join(__serverDir, '..', 'logs');
 
 const PORT = process.env.PORT || 4400;
 
@@ -35,6 +37,7 @@ export async function startServer() {
     groqKey: process.env.GROQ_API_KEY,
     geminiKey: process.env.GEMINI_API_KEY,
     groqModel: process.env.GROQ_MODEL,
+    geminiModel: process.env.GEMINI_MODEL,
   });
 
   // ── Health Check ─────────────────────────────────
@@ -57,8 +60,10 @@ export async function startServer() {
     console.log('[SERVER] Client connected:', socket.id);
 
     let transcriber = null;
+    let userTranscriber = null;
     const vad = new VADManager();
     let isProcessingQuestion = false;
+    let userSpeechBuffer = '';
 
     // ── Start Listening ──────────────────────────
 
@@ -118,12 +123,49 @@ export async function startServer() {
       console.log('[SERVER] Listening started');
     });
 
-    // ── Receive Audio Data ───────────────────────
+    // ── Receive Interviewer Audio Data ───────────
 
     socket.on('audio-data', (data) => {
       if (transcriber) {
         transcriber.sendAudio(Buffer.from(data));
       }
+    });
+
+    // ── Receive User Mic Audio Data ──────────────
+
+    socket.on('user-audio-data', async (data) => {
+      if (!userTranscriber) {
+        // Spin up a log-only transcriber for the user's mic on first audio
+        userTranscriber = new Transcriber(process.env.DEEPGRAM_API_KEY, {
+          model: process.env.DEEPGRAM_MODEL,
+        });
+
+        userTranscriber.on('transcript-final', (text) => {
+          userSpeechBuffer += (userSpeechBuffer ? ' ' : '') + text;
+        });
+
+        userTranscriber.on('utterance-end', () => {
+          if (userSpeechBuffer && userSpeechBuffer.length > 5) {
+            // Write to daily log
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const logFile = join(LOG_DIR, `session_${dateStr}.log`);
+            const entry = `\n── YOU (${now.toISOString()}): ${userSpeechBuffer}\n`;
+            try { appendFileSync(logFile, entry); } catch (e) { /* silent */ }
+            console.log(`[SERVER] User said: "${userSpeechBuffer.substring(0, 80)}..."`);
+            userSpeechBuffer = '';
+          }
+        });
+
+        userTranscriber.on('error', (err) => {
+          console.error('[SERVER] User mic transcriber error:', err.message);
+        });
+
+        await userTranscriber.start();
+        console.log('[SERVER] User mic transcriber started (log-only)');
+      }
+
+      userTranscriber.sendAudio(Buffer.from(data));
     });
 
     // ── Stop Listening ───────────────────────────
@@ -133,7 +175,12 @@ export async function startServer() {
         transcriber.stop();
         transcriber = null;
       }
+      if (userTranscriber) {
+        userTranscriber.stop();
+        userTranscriber = null;
+      }
       vad.clear();
+      userSpeechBuffer = '';
       socket.emit('listening-stopped');
       console.log('[SERVER] Listening stopped');
     });
@@ -153,6 +200,10 @@ export async function startServer() {
         transcriber.stop();
         transcriber = null;
       }
+      if (userTranscriber) {
+        userTranscriber.stop();
+        userTranscriber = null;
+      }
       console.log('[SERVER] Client disconnected:', socket.id);
     });
   });
@@ -163,6 +214,7 @@ export async function startServer() {
     console.log(`[SERVER] Running on port ${PORT}`);
     console.log(`[SERVER] Deepgram: ${process.env.DEEPGRAM_API_KEY ? '✓' : '✗'}`);
     console.log(`[SERVER] Groq: ${process.env.GROQ_API_KEY ? '✓' : '✗'}`);
+    console.log(`[SERVER] Gemini: ${process.env.GEMINI_API_KEY ? '✓' : '✗'}`);
   });
 
   return httpServer;
